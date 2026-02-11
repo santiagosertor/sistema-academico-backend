@@ -1,10 +1,10 @@
-# 🎓 Sistema Académico - Backend
+#  Sistema Académico - Backend
 
 Backend del sistema académico desarrollado con Node.js, Express y MySQL.
 
 ---
 
-## 🚀 Tecnologías utilizadas
+##  Tecnologías utilizadas
 
 - Node.js
 - Express.js
@@ -18,7 +18,7 @@ Backend del sistema académico desarrollado con Node.js, Express y MySQL.
 
 ---
 
-## ⚙️ Instalación
+##  Instalación
 
 1. Clonar repositorio
 ```bash
