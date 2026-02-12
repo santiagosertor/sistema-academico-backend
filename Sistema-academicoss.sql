@@ -3,7 +3,9 @@
 -- ================================================
 CREATE DATABASE IF NOT EXISTS sistema_academico;
 USE sistema_academico;
-
+CREATE USER 'admin2'@'localhost' IDENTIFIED BY 'admin12345';
+GRANT ALL PRIVILEGES ON sistema_academico.* TO 'admin2'@'localhost';
+FLUSH PRIVILEGES;
 -- ================================================
 --   TABLAS DE SEGURIDAD (USUARIOS, ROLES, PERMISOS)
 -- ================================================
@@ -20,6 +22,8 @@ CREATE TABLE Usuario (
 SELECT * FROM Usuario;
 SELECT * FROM Usuario_Rol;
 select*from rol;
+select*from permiso;
+select *from Rol_Permiso;
 SELECT * FROM Docente;
 SELECT * FROM Materia;
 SELECT * FROM Estudiante;
@@ -48,15 +52,15 @@ JOIN Curso c ON ec.id_curso = c.id_curso
 JOIN Materia m ON c.id_materia = m.id_materia
 JOIN Estudiante e ON ec.id_estudiante = e.id_estudiante;
 
-
-
-
-
 -- ROL
 CREATE TABLE Rol (
     id_rol INT AUTO_INCREMENT PRIMARY KEY,
     nombre_rol VARCHAR(50) NOT NULL UNIQUE
 );
+INSERT INTO Rol (nombre_rol) VALUES
+  ('Administrador'),
+  ('Docente'),
+  ('Estudiante');
 
 -- PERMISO
 CREATE TABLE Permiso (

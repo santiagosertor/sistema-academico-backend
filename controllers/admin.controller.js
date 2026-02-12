@@ -172,3 +172,35 @@ export const listarCursos = async (req, res) => {
     res.status(500).json({ message: 'Error al listar cursos', error: error.sqlMessage || error.message });
   }
 };
+
+export const crearAdmin = async (req, res) => {
+  try {
+    const { nombre_usuario, contrasena, correo } = req.body;
+
+    // Encriptar contraseña
+    const hash = await bcrypt.hash(contrasena, 10);
+
+    // Insertar usuario
+    const [result] = await pool.query(
+      "INSERT INTO Usuario (nombre_usuario, contrasena, correo) VALUES (?, ?, ?)",
+      [nombre_usuario, hash, correo]
+    );
+
+    // Asignar rol ADMIN (ejemplo: id_rol = 1)
+    await pool.query(
+      "INSERT INTO Usuario_Rol (id_usuario, id_rol) VALUES (?, ?)",
+      [result.insertId, 1]
+    );
+
+    res.status(201).json({ message: "Administrador creado correctamente" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// {
+//   "nombre_usuario": "admin5",
+//   "contrasena": "admin123",
+//   "correo": "admin5@sistema.com"
+// }
+// http://localhost:3000/api/admin

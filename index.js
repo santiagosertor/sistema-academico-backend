@@ -33,11 +33,15 @@ app.use('/api/estudiante', estudianteRoutes);
 // Rutas protegidas
 // ===============================
 // Se aplican middlewares de seguridad antes de acceder a las rutas
+// Ruta pública para crear el primer admin (sin token, sin roles)
+app.use('/api/admin', adminRoutes);
+
+// Rutas protegidas (requieren token y rol)
 app.use(
-  '/api/admin',
-  verificarToken,             // Validar token JWT
-  verificarEstadoUsuario,     // Verificar que el usuario esté activo
-  permitirRoles('Administrador'), // Restringir acceso solo a rol Administrador
+  '/api/admin-protegido',
+  verificarToken,
+  verificarEstadoUsuario,
+  permitirRoles('Administrador'),
   adminRoutes
 );
 
