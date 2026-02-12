@@ -1,5 +1,7 @@
 import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
 
+dotenv.config();
 /**
  * Configuración de conexión a la base de datos MySQL.
  * - Se utiliza `mysql2/promise` para trabajar con async/await.
@@ -14,10 +16,10 @@ import mysql from 'mysql2/promise';
  * - El pool debe apuntar a la base de datos correcta (`sistema_academico`).
  */
 const pool = mysql.createPool({
-  host: 'localhost',       // Servidor de la base de datos
-  user: 'root',            // Usuario de la base de datos
-  password: 'admin1234',   // Contraseña del usuario (recomendable mover a .env)
-  database: 'sistema_academico', // Nombre de la base de datos
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || 'admin1234',
+  database: process.env.DB_NAME || 'sistema_academico',
 });
 
 // Exportación del pool para ser utilizado en consultas SQL
