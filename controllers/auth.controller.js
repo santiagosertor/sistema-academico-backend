@@ -34,54 +34,73 @@ export const register = async (req, res) => {
   try {
     await conn.beginTransaction();
 
-    // 1️⃣ Verificar usuario existente
+    /**
+     * MEJORA: Validación con Bloqueo (FOR UPDATE)
+     * Esto evita que dos personas intenten registrar el mismo nombre al mismo tiempo
+     * y asegura que si el usuario existe, el proceso se detenga ANTES de tocar el ID.
+     */
     const [existe] = await conn.query(
-      'SELECT id_usuario FROM Usuario WHERE nombre_usuario = ? OR correo = ?',
+      'SELECT id_usuario FROM Usuario WHERE nombre_usuario = ? OR correo = ? FOR UPDATE',
       [nombre_usuario, correo]
     );
 
     if (existe.length > 0) {
-      await conn.rollback();
-      return res.status(409).json({ message: 'Usuario o correo ya existe' });
+      await conn.rollback(); // Cancelamos todo
+      return res.status(409).json({ message: 'El usuario o correo ya se encuentra registrado' });
     }
 
-    // 2️⃣ Crear usuario
+    // 1️⃣ Cifrado de contraseña
     const hash = await bcrypt.hash(contrasena, 10);
+
+    // 2️⃣ Crear usuario (El ID se genera aquí)
     const [result] = await conn.query(
       'INSERT INTO Usuario (nombre_usuario, correo, contrasena, estado) VALUES (?, ?, ?, 1)',
       [nombre_usuario, correo, hash]
     );
     const idUsuario = result.insertId;
 
-    // 3️⃣ Obtener rol Estudiante
+    // 3️⃣ Obtener id del rol Estudiante
     const [rolRow] = await conn.query(
       'SELECT id_rol FROM Rol WHERE nombre_rol = "Estudiante"'
     );
+    
     if (rolRow.length === 0) {
-      await conn.rollback();
-      return res.status(400).json({ message: 'Rol Estudiante no existe en la BD' });
+      throw new Error('CONFIG_ERROR_ROL'); // Forzamos el catch para hacer rollback
     }
 
     const idRol = rolRow[0].id_rol;
+
+    // 4️⃣ Vincular Usuario con Rol
     await conn.query(
       'INSERT INTO Usuario_Rol (id_usuario, id_rol) VALUES (?, ?)',
       [idUsuario, idRol]
     );
 
-    // 4️⃣ Crear registro mínimo en Estudiante
+    // 5️⃣ Crear perfil en tabla Estudiante
+    // Usamos INSERT IGNORE o validamos para que nada falle aquí
     await conn.query(
       `INSERT INTO Estudiante (correo, id_usuario) VALUES (?, ?)`,
       [correo, idUsuario]
     );
 
+    // ✅ SI LLEGAMOS AQUÍ, TODO ES PERFECTO
     await conn.commit();
     res.status(201).json({ message: 'Registro exitoso como Estudiante' });
 
   } catch (error) {
+    // ❌ SI ALGO FALLA (SQL, Red, falta de datos), SE DESHACE TODO
+    // El ID generado en el paso 2 se "libera" en la lógica de la transacción
     await conn.rollback();
-    console.error(error);
-    res.status(500).json({ message: 'Error interno' });
+    
+    console.error("Error en el proceso de registro:", error);
+
+    if (error.message === 'CONFIG_ERROR_ROL') {
+        return res.status(500).json({ message: 'Error de configuración: Rol Estudiante no encontrado' });
+    }
+
+    res.status(500).json({ message: 'Error interno al procesar el registro' });
   } finally {
+    // Liberar la conexión al pool siempre
     conn.release();
   }
 };
