@@ -142,7 +142,7 @@ export async function listarEstudiantesDisponibles(req, res) {
        FROM Estudiante`
     );
 
-    console.log('Estudiantes disponibles:', rows); // 👈 log de depuración
+    console.log('Estudiantes disponibles:', rows); // log de depuración
     res.json(rows);
   } catch (error) {
     console.error(error);

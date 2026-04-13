@@ -2,7 +2,7 @@ import express from 'express';
 import {
   crearDocente, listarDocentes,
   crearMateria, listarMaterias,
-  crearCurso, listarCursos,crearAdmin
+  crearCurso, listarCursos
 } from '../controllers/admin.controller.js';
 
 const router = express.Router();
@@ -55,10 +55,5 @@ router.post('/cursos', crearCurso);
  * - Lista todos los cursos disponibles en el sistema.
  */
 router.get('/cursos', listarCursos);
-
-// Ruta pública para crear admin
-router.post("/", crearAdmin);
-
-
 
 export default router;
